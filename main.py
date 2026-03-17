@@ -24,7 +24,7 @@ sue.set_flag(SpriteFlag.INVISIBLE, True)
 bbr.set_flag(SpriteFlag.INVISIBLE, True)
 game.splash("Defend yourself!")
 game.splash("Use your arrows/WSAD\n to move")
-game.splash("Aim and shoot with\n the mouse!")
+game.splash("Aim and shoot with\n the mouse or space!")
 game.splash("Don't get hit!")
 # player setup
 p = sprites.create(assets.image("Pship"), Player)
@@ -93,7 +93,7 @@ sprites.on_overlap(Player, Enemy, p_hit)
 sprites.on_overlap(Player, Eproj, p_hit)
 def point():
     transformSprites.rotate_sprite(p, spriteutils.radians_to_degrees(spriteutils.angle_from(p, pointer)))
-    if browserEvents.mouse_any.is_pressed():
+    if browserEvents.mouse_any.is_pressed() or controller.A.is_pressed():
         timer.throttle("action", 75, on_event_pressed)
 game.on_update(point)
 

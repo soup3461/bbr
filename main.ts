@@ -22,7 +22,7 @@ game.splash("Defend yourself!")
 game.splash(`Use your arrows/WSAD
  to move`)
 game.splash(`Aim and shoot with
- the mouse!`)
+ the mouse or space!`)
 game.splash("Don't get hit!")
 //  player setup
 let p = sprites.create(assets.image`Pship`, Player)
@@ -86,7 +86,7 @@ sprites.onOverlap(Player, Enemy, p_hit)
 sprites.onOverlap(Player, Eproj, p_hit)
 game.onUpdate(function point() {
     transformSprites.rotateSprite(p, spriteutils.radiansToDegrees(spriteutils.angleFrom(p, pointer)))
-    if (browserEvents.MouseAny.isPressed()) {
+    if (browserEvents.MouseAny.isPressed() || controller.A.isPressed()) {
         timer.throttle("action", 75, function on_event_pressed() {
             let Pproj: Sprite;
             Pproj = sprites.create(assets.image`beam`, Proj)
