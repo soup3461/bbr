@@ -1,0 +1,53 @@
+{
+    "name": "BBR",
+    "description": "",
+    "dependencies": {
+        "device": "*",
+        "pxt-arcade-image-transform": "github:Llywelwyn/pxt-arcade-image-transform#cc49d72e2e8a142723b32396490505bb3194b7d0",
+        "Sprites Advanced": "github:The-Code-Zone/Sprites-Advanced-pxt-extension#v0.1.15",
+        "Browser Events Advanced": "github:The-Code-Zone/Browser-Events-Advanced-pxt-extension#v0.2.7",
+        "Extra Effects": "github:AlexSzeto/extra-effects#v3.1.0",
+        "Timers": "github:microsoft/arcade-timers#v1.1.0",
+        "arcade-story": "github:microsoft/arcade-storytelling#v1.0.3",
+        "arcade-sprite-events": "github:The-Code-Zone/Events-pxt-extension#e98f3047732201538e3b7de17d64c191c7d32eaf"
+    },
+    "files": [
+        "main.blocks",
+        "main.ts",
+        "README.md",
+        "assets.json",
+        "main.py",
+        "images.g.jres",
+        "images.g.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "targetVersions": {
+        "target": "4.0.12",
+        "pxt": "10.0.23",
+        "targetId": "arcade"
+    },
+    "supportedTargets": [
+        "arcade"
+    ],
+    "preferredEditor": "pyprj",
+    "palette": [
+        "#000000",
+        "#FFFFFF",
+        "#FF2121",
+        "#B14C16",
+        "#FF8135",
+        "#FFF609",
+        "#249CA3",
+        "#78DC52",
+        "#003FAD",
+        "#87F2FF",
+        "#8E2EC4",
+        "#A4839F",
+        "#5C406c",
+        "#E5CDC4",
+        "#B247F0",
+        "#000000"
+    ]
+}
