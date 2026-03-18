@@ -2,15 +2,17 @@ Enemy = SpriteKind.Enemy
 Player = SpriteKind.player
 Proj = SpriteKind.projectile
 Eproj = SpriteKind.create()
+Food = SpriteKind.food
 effects.star_field.start_screen_effect()
 enemies = 0
 spawning = False
+combo = 0
 
 
 
 
 # opening cs:
-sue = sprites.create(assets.image("bunb"))
+'''sue = sprites.create(assets.image("bunb"))
 sue.set_position(30, 40)
 talk(sue, "Aaah, what a lovely time to be out on my space ship that I, a rabbit, managed to obtain through entirely legal means", "Bun")
 bbr = sprites.create(assets.image("bbr"))
@@ -25,7 +27,7 @@ bbr.set_flag(SpriteFlag.INVISIBLE, True)
 game.splash("Defend yourself!")
 game.splash("Use your arrows/WSAD\n to move")
 game.splash("Aim and shoot with\n the mouse or space!")
-game.splash("Don't get hit!")
+game.splash("Don't get hit!")'''
 # player setup
 p = sprites.create(assets.image("Pship"), Player)
 p.scale = 1
@@ -35,7 +37,9 @@ pointer = sprites.create(assets.image("dot"))
 browserEvents.sprite_follow_mouse_pointer(pointer)
 info.set_life(5)
 spriteutils.set_life_image(assets.image("""Pship0"""))
-
+ctext = textsprite.create("x" + str(combo), 1, 4 )
+ctext.bottom = 120
+ctext.left = 0
 #extraEffects.create_spread_effect_on_anchor(p,extraEffects.create_full_presets_spread_effect_data(ExtraEffectPresetColor.POISON,ExtraEffectPresetShape.SPARK),10)
 def on_event_pressed():
     Pproj = sprites.create(assets.image("beam"), Proj)
@@ -60,20 +64,49 @@ def actual_spawn():
     e = sprites.create(assets.image("eship"), Enemy)
     spriteutils.place_sprite_randomly_on_edge(e)
     spriteutils.follow_and_rotate(e, p, randint(40,60), randint(50, 80))
-actual_spawn()           
+actual_spawn()
 
 def e_hit(proj, enem):
-    global spawning
+    global spawning, combo
     extraEffects.create_spread_effect_on_anchor(enem,extraEffects.create_full_presets_spread_effect_data(ExtraEffectPresetColor.FIRE,ExtraEffectPresetShape.SPARK),10)
+    points = 100 + 10 * combo
+    ptext = textsprite.create(str(points))
+    ptext.set_position(enem.x, enem.y)
+    ptext.vy = -50
+    if combo > 1:
+        ptext.scale = 1 + combo/20
+    def textdel():
+        ptext.destroy()
+    timer.after(250, textdel)
     enem.destroy()
     if len(sprites.all_of_kind(Enemy)) < 2 and spawning == False:
             spawning = True
             timer.background(enem_spawn)
     proj.destroy()
-    info.change_score_by(100)
+    info.change_score_by(100 + 10 * combo)
+    combo += 1
+    if randint(1, 5) == 1:
+        life = sprites.create(assets.image("Pship0"), Food)
+        life.set_position(enem.x, enem.y)
+        life.lifespan = 3000
 events.sprite_event(Proj, Enemy, events.SpriteEvent.START_OVERLAPPING, e_hit)
 
-
+def collect_life(player: Sprite, life: Sprite):
+    if info.life() == 5:
+        points = 100 + 10 * combo
+        info.change_score_by(100 + 10 * combo)
+        ptext = textsprite.create(str(points))
+        ptext.set_position(life.x, life.y)
+        ptext.vy = -50
+        if combo > 1:
+            ptext.scale = 1 + combo/20
+        def textdel():
+            ptext.destroy()
+        timer.after(250, textdel)
+    else:
+        info.change_life_by(1)
+    life.destroy()
+sprites.on_overlap(Player, Food, collect_life)
 def e_fire():
     for ship in sprites.all_of_kind(Enemy):
         if randint(1, 5) == 1:
@@ -85,6 +118,8 @@ def e_fire():
 game.on_update_random_interval(500, 750, False , e_fire)
 
 def p_hit(pship: Sprite, enem: Sprite):
+    global combo
+    combo = 0
     info.change_life_by(-1)
     enem.destroy()
     extraEffects.create_spread_effect_on_anchor(pship,extraEffects.create_full_presets_spread_effect_data(ExtraEffectPresetColor.POISON,ExtraEffectPresetShape.SPARK),10)
@@ -92,9 +127,11 @@ def p_hit(pship: Sprite, enem: Sprite):
 sprites.on_overlap(Player, Enemy, p_hit)
 sprites.on_overlap(Player, Eproj, p_hit)
 def point():
+
     transformSprites.rotate_sprite(p, spriteutils.radians_to_degrees(spriteutils.angle_from(p, pointer)))
     if browserEvents.mouse_any.is_pressed() or controller.A.is_pressed():
         timer.throttle("action", 75, on_event_pressed)
+    ctext.set_text("X" + str(combo))
 game.on_update(point)
 
 def talk(speaker: Sprite, tts: string, name: string):

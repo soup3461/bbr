@@ -10,7 +10,8 @@
         "Extra Effects": "github:AlexSzeto/extra-effects#v3.1.0",
         "Timers": "github:microsoft/arcade-timers#v1.1.0",
         "arcade-story": "github:microsoft/arcade-storytelling#v1.0.3",
-        "arcade-sprite-events": "github:The-Code-Zone/Events-pxt-extension#e98f3047732201538e3b7de17d64c191c7d32eaf"
+        "arcade-sprite-events": "github:The-Code-Zone/Events-pxt-extension#e98f3047732201538e3b7de17d64c191c7d32eaf",
+        "arcade-text": "github:microsoft/arcade-text#v1.3.0"
     },
     "files": [
         "main.blocks",
