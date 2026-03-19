@@ -107,14 +107,16 @@ def collect_life(player: Sprite, life: Sprite):
         info.change_life_by(1)
     life.destroy()
 sprites.on_overlap(Player, Food, collect_life)
+
 def e_fire():
     for ship in sprites.all_of_kind(Enemy):
         if randint(1, 5) == 1:
+            music.pew_pew.play()
             ebeam = sprites.create(assets.image("ebeam"), Eproj)
             ebeam.set_position(ship.x, ship.y)
             ebeam.set_flag(SpriteFlag.AUTO_DESTROY, True)
             transformSprites.rotate_sprite(ebeam, spriteutils.radians_to_degrees(spriteutils.angle_from(ebeam, p)))
-            spriteutils.set_velocity_at_angle(ebeam, spriteutils.angle_from(ebeam, p), 200)
+            spriteutils.set_velocity_at_angle(ebeam, spriteutils.angle_from(ebeam, p), 150)
 game.on_update_random_interval(500, 750, False , e_fire)
 
 def p_hit(pship: Sprite, enem: Sprite):

@@ -114,11 +114,12 @@ game.onUpdateRandomInterval(500, 750, false, function e_fire() {
     let ebeam: Sprite;
     for (let ship of sprites.allOfKind(Enemy)) {
         if (randint(1, 5) == 1) {
+            music.pewPew.play()
             ebeam = sprites.create(assets.image`ebeam`, Eproj)
             ebeam.setPosition(ship.x, ship.y)
             ebeam.setFlag(SpriteFlag.AutoDestroy, true)
             transformSprites.rotateSprite(ebeam, spriteutils.radiansToDegrees(spriteutils.angleFrom(ebeam, p)))
-            spriteutils.setVelocityAtAngle(ebeam, spriteutils.angleFrom(ebeam, p), 200)
+            spriteutils.setVelocityAtAngle(ebeam, spriteutils.angleFrom(ebeam, p), 150)
         }
         
     }
