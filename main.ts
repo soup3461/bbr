@@ -1,3 +1,9 @@
+/** @namespace
+class userconfig:
+    ARCADE_SCREEN_HEIGHT = 240
+    ARCADE_SCREEN_WIDTH = 320
+ */
+let Boss = SpriteKind.create()
 let Enemy = SpriteKind.Enemy
 let Player = SpriteKind.Player
 let Proj = SpriteKind.Projectile
@@ -7,26 +13,26 @@ effects.starField.startScreenEffect()
 let enemies = 0
 let spawning = false
 let combo = 0
+let boss_spawned = false
 //  opening cs:
-/** sue = sprites.create(assets.image("bunb"))
-sue.set_position(30, 40)
+let sue = sprites.create(assets.image`bunb`)
+sue.setPosition(30, 40)
 talk(sue, "Aaah, what a lovely time to be out on my space ship that I, a rabbit, managed to obtain through entirely legal means", "Bun")
-bbr = sprites.create(assets.image("bbr"))
-bbr.set_position(130,40)
+let bbr = sprites.create(assets.image`bbr`)
+bbr.setPosition(130, 40)
 talk(bbr, "Did someone say an entirely legal and safe trip?", "???")
 talk(sue, "Mayyybe, depends who's asking?", "Bun")
 talk(bbr, "teehee, it's me, the Bad Bunny Rabbit! I am here to steal your ship!", "B.B.R.")
 talk(sue, "NOO!! I don't have insurance on this ship that I stole- I mean only just obtained", "Bun")
 talk(bbr, "Go my fleet of other Bad Bunny Rabbits! Take Her Ship!", "B.B.R")
-sue.set_flag(SpriteFlag.INVISIBLE, True)
-bbr.set_flag(SpriteFlag.INVISIBLE, True)
+sue.setFlag(SpriteFlag.Invisible, true)
+bbr.setFlag(SpriteFlag.Invisible, true)
 game.splash("Defend yourself!")
-game.splash("Use your arrows/WSAD
- to move")
-game.splash("Aim and shoot with
- the mouse or space!")
+game.splash(`Use your arrows/WSAD
+ to move`)
+game.splash(`Aim and shoot with
+ the mouse or space!`)
 game.splash("Don't get hit!")
- */
 //  player setup
 let p = sprites.create(assets.image`Pship`, Player)
 p.scale = 1
@@ -41,6 +47,16 @@ ctext.bottom = 120
 ctext.left = 0
 // extraEffects.create_spread_effect_on_anchor(p,extraEffects.create_full_presets_spread_effect_data(ExtraEffectPresetColor.POISON,ExtraEffectPresetShape.SPARK),10)
 // browserEvents.mouse_any.on_event(browserEvents.MouseButtonEvent.PRESSED, on_event_pressed)
+function enem_spawn() {
+    
+    for (let i = 0; i < randint(5, 7); i++) {
+        pause(randint(250, 500))
+        actual_spawn()
+        console.log(sprites.allOfKind(Enemy).length)
+    }
+    spawning = false
+}
+
 function actual_spawn() {
     
     let e = sprites.create(assets.image`eship`, Enemy)
@@ -65,17 +81,9 @@ events.spriteEvent(Proj, Enemy, events.SpriteEvent.StartOverlapping, function e_
         ptext.destroy()
     })
     enem.destroy()
-    if (sprites.allOfKind(Enemy).length < 2 && spawning == false) {
+    if (sprites.allOfKind(Enemy).length < 2 && spawning == false && boss_spawned == false) {
         spawning = true
-        timer.background(function enem_spawn() {
-            
-            for (let i = 0; i < randint(5, 7); i++) {
-                pause(randint(250, 500))
-                actual_spawn()
-                console.log(sprites.allOfKind(Enemy).length)
-            }
-            spawning = false
-        })
+        timer.background(enem_spawn)
     }
     
     proj.destroy()
@@ -130,6 +138,10 @@ function p_hit(pship: Sprite, enem: Sprite) {
     info.changeLifeBy(-1)
     enem.destroy()
     extraEffects.createSpreadEffectOnAnchor(pship, extraEffects.createFullPresetsSpreadEffectData(ExtraEffectPresetColor.Poison, ExtraEffectPresetShape.Spark), 10)
+    if (sprites.allOfKind(Enemy).length < 2 && spawning == false && boss_spawned == false) {
+        enem_spawn()
+    }
+    
 }
 
 sprites.onOverlap(Player, Enemy, p_hit)
@@ -154,3 +166,50 @@ function talk(speaker: Sprite, tts: string, name: string) {
     story.printCharacterText(tts, name)
 }
 
+info.onScore(10000, function on_score() {
+    
+    boss_spawned = true
+    let b = sprites.create(assets.image`eship`, Boss)
+    sprites.setDataNumber(b, "health", 500)
+    b.scale = 2
+    spriteutils.placeSpriteRandomlyOnEdge(b)
+    spriteutils.followAndRotate(b, p, randint(30, 40), randint(50, 80))
+})
+game.onUpdateRandomInterval(250, 500, false, function b_fire() {
+    let ebeam: Sprite;
+    for (let ship of sprites.allOfKind(Boss)) {
+        if (randint(1, 5) == 1) {
+            music.pewPew.play()
+            ebeam = sprites.create(assets.image`ebeam`, Eproj)
+            ebeam.setPosition(ship.x, ship.y)
+            ebeam.setFlag(SpriteFlag.AutoDestroy, true)
+            transformSprites.rotateSprite(ebeam, spriteutils.radiansToDegrees(spriteutils.angleFrom(ebeam, p)))
+            spriteutils.setVelocityAtAngle(ebeam, spriteutils.angleFrom(ebeam, p), 200)
+        }
+        
+    }
+})
+sprites.onOverlap(Proj, Boss, function bhit(proj: Sprite, boss: Sprite) {
+    
+    sprites.changeDataNumberBy(boss, "health", -1)
+    extraEffects.createSpreadEffectOnAnchor(boss, extraEffects.createFullPresetsSpreadEffectData(ExtraEffectPresetColor.Fire, ExtraEffectPresetShape.Spark), 10)
+    if (sprites.readDataNumber(boss, "health") < 1) {
+        info.changeScoreBy(1000 * combo)
+        boss.destroy()
+    }
+    
+    proj.destroy()
+    combo += 1
+})
+sprites.onDestroyed(Boss, function on_destroyed(sprite: Sprite) {
+    pause(1000)
+    sue.setFlag(SpriteFlag.Invisible, false)
+    talk(sue, "*pant pant* phew! That seems to be the last of them...", "Bun")
+    bbr.setFlag(SpriteFlag.Invisible, false)
+    talk(sue, "AH!", "Bun")
+    talk(bbr, "I... HOW? My entire fleet... GONE!", "B.B.R.")
+    talk(sue, "I guess I got lucky, I managed to steal ALL the carrots in the sector, this ship, AND beat your whole army after all", "Bun")
+    talk(bbr, "CURSE YOU BUN VON BUN BUN!!!", "B.B.R")
+    sprites.destroy(bbr, effects.disintegrate)
+    game.gameOver(true)
+})

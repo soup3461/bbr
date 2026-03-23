@@ -1,3 +1,9 @@
+'''@namespace
+class userconfig:
+    ARCADE_SCREEN_HEIGHT = 240
+    ARCADE_SCREEN_WIDTH = 320'''
+
+Boss = SpriteKind.create()
 Enemy = SpriteKind.Enemy
 Player = SpriteKind.player
 Proj = SpriteKind.projectile
@@ -7,12 +13,12 @@ effects.star_field.start_screen_effect()
 enemies = 0
 spawning = False
 combo = 0
-
+boss_spawned = False
 
 
 
 # opening cs:
-'''sue = sprites.create(assets.image("bunb"))
+sue = sprites.create(assets.image("bunb"))
 sue.set_position(30, 40)
 talk(sue, "Aaah, what a lovely time to be out on my space ship that I, a rabbit, managed to obtain through entirely legal means", "Bun")
 bbr = sprites.create(assets.image("bbr"))
@@ -24,10 +30,11 @@ talk(sue, "NOO!! I don't have insurance on this ship that I stole- I mean only j
 talk(bbr, "Go my fleet of other Bad Bunny Rabbits! Take Her Ship!", "B.B.R")
 sue.set_flag(SpriteFlag.INVISIBLE, True)
 bbr.set_flag(SpriteFlag.INVISIBLE, True)
+
 game.splash("Defend yourself!")
 game.splash("Use your arrows/WSAD\n to move")
 game.splash("Aim and shoot with\n the mouse or space!")
-game.splash("Don't get hit!")'''
+game.splash("Don't get hit!")
 # player setup
 p = sprites.create(assets.image("Pship"), Player)
 p.scale = 1
@@ -79,7 +86,7 @@ def e_hit(proj, enem):
         ptext.destroy()
     timer.after(250, textdel)
     enem.destroy()
-    if len(sprites.all_of_kind(Enemy)) < 2 and spawning == False:
+    if len(sprites.all_of_kind(Enemy)) < 2 and spawning == False and boss_spawned == False:
             spawning = True
             timer.background(enem_spawn)
     proj.destroy()
@@ -125,7 +132,8 @@ def p_hit(pship: Sprite, enem: Sprite):
     info.change_life_by(-1)
     enem.destroy()
     extraEffects.create_spread_effect_on_anchor(pship,extraEffects.create_full_presets_spread_effect_data(ExtraEffectPresetColor.POISON,ExtraEffectPresetShape.SPARK),10)
-    
+    if len(sprites.all_of_kind(Enemy)) < 2 and spawning == False and boss_spawned == False:
+            enem_spawn()
 sprites.on_overlap(Player, Enemy, p_hit)
 sprites.on_overlap(Player, Eproj, p_hit)
 def point():
@@ -139,3 +147,49 @@ game.on_update(point)
 def talk(speaker: Sprite, tts: string, name: string):
     animation.run_movement_animation(speaker, animation.animation_presets(animation.bobbing), 500, False)
     story.print_character_text(tts, name)
+
+def on_score():
+    global boss_spawned
+    boss_spawned = True
+    b = sprites.create(assets.image("eship"), Boss)
+    sprites.set_data_number(b, "health", 500)
+    b.scale = 2
+    spriteutils.place_sprite_randomly_on_edge(b)
+    spriteutils.follow_and_rotate(b, p, randint(30,40), randint(50, 80))
+info.on_score(10000, on_score)
+
+def b_fire():
+    for ship in sprites.all_of_kind(Boss):
+        if randint(1, 5) == 1:
+            music.pew_pew.play()
+            ebeam = sprites.create(assets.image("ebeam"), Eproj)
+            ebeam.set_position(ship.x, ship.y)
+            ebeam.set_flag(SpriteFlag.AUTO_DESTROY, True)
+            transformSprites.rotate_sprite(ebeam, spriteutils.radians_to_degrees(spriteutils.angle_from(ebeam, p)))
+            spriteutils.set_velocity_at_angle(ebeam, spriteutils.angle_from(ebeam, p), 200)
+game.on_update_random_interval(250, 500, False , b_fire)
+
+
+def bhit(proj: Sprite, boss: Sprite):
+    global combo
+    sprites.change_data_number_by(boss, "health", -1)
+    extraEffects.create_spread_effect_on_anchor(boss,extraEffects.create_full_presets_spread_effect_data(ExtraEffectPresetColor.FIRE,ExtraEffectPresetShape.SPARK),10)
+    if sprites.read_data_number(boss, "health") < 1:
+        info.change_score_by(1000 * combo)
+        boss.destroy()
+    proj.destroy()
+    combo += 1
+sprites.on_overlap(Proj, Boss, bhit)
+
+def on_destroyed(sprite):
+    pause(1000)
+    sue.set_flag(SpriteFlag.INVISIBLE, False)
+    talk(sue, "*pant pant* phew! That seems to be the last of them...", "Bun")
+    bbr.set_flag(SpriteFlag.INVISIBLE, False)
+    talk(sue, "AH!", "Bun")
+    talk(bbr, "I... HOW? My entire fleet... GONE!", "B.B.R.")
+    talk(sue, "I guess I got lucky, I managed to steal ALL the carrots in the sector, this ship, AND beat your whole army after all", "Bun")
+    talk(bbr, "CURSE YOU BUN VON BUN BUN!!!", "B.B.R")
+    sprites.destroy(bbr, effects.disintegrate)
+    game.game_over(True)
+sprites.on_destroyed(Boss, on_destroyed)
